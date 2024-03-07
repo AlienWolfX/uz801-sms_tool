@@ -1,5 +1,6 @@
 #!python3
 import os
+import re
 import sys
 import smtp
 
@@ -59,15 +60,30 @@ def forward_msg():
             print('Failed:',i)
             
 def view_msg():
-    p=os.popen('mmcli -m 0 --messaging-list-sms')
-    print(p.read())
+    p = os.popen('mmcli -m 0 --messaging-list-sms')
+    output = p.read()
+    sms_numbers = re.findall(r'/SMS/(\d+)', output)
+    for i in sms_numbers:
+        p = os.popen('mmcli --modem 1 --sms '+i)
+        sms_content = p.read()
+        number = re.search(r'number: (\+\d+)', sms_content)
+        text = re.search(r'text: (.*)', sms_content)
+        timestamp = re.search(r'timestamp: (.*)', sms_content)
+        if number and text and timestamp:
+            print('Number:', number.group(1))
+            print('Text:', text.group(1))
+            print('Timestamp:', timestamp.group(1))
 
 cmd = sys.argv
 cmd_len = len(cmd)
 
 if len(cmd) > 1:
     if cmd[1] == 'add':
-        add_msg(cmd[2],cmd[3])
+        if len(cmd) > 3:
+            add_msg(cmd[2],cmd[3])
+        else:
+            print('Error! add requires 2 arguments.')
+            print('Hint: python3 msg.py [number] [message].')
     elif cmd[1] == 'send':
         scan_local_msg()
         send_all()
