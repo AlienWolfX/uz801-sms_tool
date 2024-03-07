@@ -67,7 +67,7 @@ def view_msg():
     table = PrettyTable(['Number', 'Text', 'Timestamp'])
     
     for i in sms_numbers:
-        p = os.popen('mmcli --modem 1 --sms '+i)
+        p = os.popen('mmcli --modem 0 --sms '+i)
         sms_content = p.read()
         number = re.search(r'number: (\+\d+)', sms_content)
         text = re.search(r'text: (.*)', sms_content)
