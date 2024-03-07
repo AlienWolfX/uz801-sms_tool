@@ -2,7 +2,7 @@
 import os
 import re
 import sys
-import smtp
+from prettytable import PrettyTable
 
 unknown = []
 sent = []
@@ -63,6 +63,9 @@ def view_msg():
     p = os.popen('mmcli -m 0 --messaging-list-sms')
     output = p.read()
     sms_numbers = re.findall(r'/SMS/(\d+)', output)
+    
+    table = PrettyTable(['Number', 'Text', 'Timestamp'])
+    
     for i in sms_numbers:
         p = os.popen('mmcli --modem 1 --sms '+i)
         sms_content = p.read()
@@ -70,9 +73,11 @@ def view_msg():
         text = re.search(r'text: (.*)', sms_content)
         timestamp = re.search(r'timestamp: (.*)', sms_content)
         if number and text and timestamp:
-            print('Number:', number.group(1))
-            print('Text:', text.group(1))
-            print('Timestamp:', timestamp.group(1))
+            # Add the data to the table
+            table.add_row([number.group(1), text.group(1), timestamp.group(1)])
+    
+    # Print the table
+    print(table)
 
 cmd = sys.argv
 cmd_len = len(cmd)
